@@ -1,16 +1,10 @@
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:signature/signature.dart';
-import 'utils.dart';
+// import 'utils.dart';
 
-import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
+// import 'package:dio/dio.dart';
+// import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,38 +38,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var PermissionUtil;
-
-  var Utils;
-
   @override
   void initState() {
     super.initState();
-    PermissionUtil.requestAll();
   }
 
   // ignore: prefer_final_fields
-  GlobalKey _globalKey = GlobalKey();
+
   Uint8List? signature;
   final controller = SignatureController(
       penColor: Colors.white,
       penStrokeWidth: 3,
       exportPenColor: Colors.red,
       exportBackgroundColor: Colors.black);
-
-  _saveLocalImage() async {
-    RenderRepaintBoundary boundary =
-        _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    ui.Image image = await boundary.toImage();
-    ByteData? byteData =
-        await (image.toByteData(format: ui.ImageByteFormat.png));
-    if (byteData != null) {
-      final result =
-          await ImageGallerySaver.saveImage(byteData.buffer.asUint8List());
-
-      Utils.toast(result.toString());
-    }
-  }
 
   @override
   void dispose() {
@@ -130,39 +105,6 @@ class _MyHomePageState extends State<MyHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    signature = await controller.toPngBytes();
-                    setState(() async {
-                      if (signature != null) {
-                        final status = await Permission.storage.status;
-                        if (!status.isGranted ||
-                            status.isDenied ||
-                            status.isPermanentlyDenied) {
-                          await Permission.storage.request();
-                        }
-                        final time = DateTime.now()
-                            .toIso8601String()
-                            .replaceAll(".", ":");
-
-                        final result = await ImageGallerySaver.saveImage(
-                            signature!,
-                            name: 'signature_$time');
-
-                        debugPrint(result.toString());
-
-                        if (result['isSucess']) {
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Signature Saved")));
-
-                          controller.clear();
-                        }
-                      }
-                    });
-                  },
-                  child: const Text('export in gallary'),
-                ),
                 ElevatedButton(
                   onPressed: () async {
                     signature = await controller.toPngBytes();
